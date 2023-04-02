@@ -9,8 +9,10 @@ template.innerHTML = `
 
 <div class="input-row">
 <input  placeholder="Type message..."id="inputField"></input>
-
-<button id="generateRes"><i class="fa-sharp fa-solid fa-paper-plane"></i></button>
+<div class="action-btns">
+<button id="generateRes"><i class="fa-sharp fa-solid fa-paper-plane btn-icon"></i></button>
+<button id="clearMsgs"><i class="fa-solid fa-dumpster btn-icon"></i></button>
+</div>
 </div>
 `;
 
@@ -35,15 +37,26 @@ class gptForm extends HTMLElement {
                 headers: { 'Content-Type': 'application/json' }
             })
 
-            this.shadowRoot
-                .querySelector('.response').innerHTML = await response.text();;
         }
+    }
+
+    async clearMessages() {
+        let uri = '/clear'
+        const response = await fetch(uri, {
+            method: 'GET',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' }
+        })
     }
 
     connectedCallback() {
         this.shadowRoot
             .querySelector("#generateRes")
             .addEventListener("click", () => this.promptResponse());
+
+        this.shadowRoot
+            .querySelector("#clearMsgs")
+            .addEventListener("click", () => this.clearMessages());
     }
 
     disconnectedCallback() {

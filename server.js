@@ -59,6 +59,21 @@ function sendAllMessages(request, response) {
     response.send(JSON.stringify(msgs));
 }
 
+app.get('/clear', removeAllMessages);
+
+function removeAllMessages(request, response) {
+
+    msgs.msgs = [];
+    msgs.msgs.push({ "role": "system", "content": "Hi!, I'm chatGPT How can I help you?" });
+    let data = JSON.stringify(msgs);
+    writeFile('msgs.json', data, finished)
+    response.send("deleted all msgs");
+
+    function finished(err) {
+        console.log("deleted msgs")
+    }
+}
+
 
 app.get('/add/:role?/:content?', addMessage);
 
