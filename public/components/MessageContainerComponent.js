@@ -1,48 +1,91 @@
-const template = document.createElement("template");
-template.innerHTML = `
-
-
-<style>
-@import "style.css";
-</style>
-<button id="updatemsgs">update</button>
-<div class="message-container">
-
-
-<p class="message request">Hi There!</p>
-
-
-
-</div>
-`;
+import { html, render } from 'https://unpkg.com/lit-html?module';
 
 class messageContainer extends HTMLElement {
+
     constructor() {
         super();
-        this.attachShadow({ mode: "open" });
-        this.shadowRoot.appendChild(template.content.cloneNode(true));
+        this.msgs;
+    }
+
+    renderMesssages() {
+
+
+            return html `
+        ${this.msgs.msgs?.map(msg => {
+            return html`
+            <p 
+            class=${msg.role==="system"?"message response":"message request"}
+            
+            >
+            ${msg.content}</p>
+            `;
+        })}
+
+        
+    `;
+
 
     }
 
-
-
-    async updateMessages() {
-
-        let uri = '/all/'
-        const response = await fetch(uri, {
+    async loadMessages() {
+        this.msgs = await fetch('/all/', {
             method: 'GET',
             mode: 'cors',
             headers: { 'Content-Type': 'application/json' }
         })
+        this.msgs = await this.msgs.json()
 
-        console.log(await response.text())
     }
 
-    connectedCallback() {
-        this.shadowRoot
-            .querySelector("#updatemsgs")
-            .addEventListener("click", () => this.updateMessages());
+
+
+    _handleClick(){
+        console.log("dispatching event")
+        let click = new Event('click');
+
+        this.dispatchEvent(click);
     }
+
+    
+    async renderMessageBox() {
+        if (!this.shadowRoot) {
+            return;
+        }
+
+
+        const template = html `
+        <style>
+        @import "./style.css";
+        </style>
+
+         
+
+        <div class="message-container">
+
+        ${ this.renderMesssages()}
+            
+        </div>
+        `;
+
+        render(template, this.shadowRoot);
+
+
+
+    }
+
+
+
+
+
+    async connectedCallback() {
+
+        this.attachShadow({ mode: 'open' });
+        await this.loadMessages();
+        this.renderMessageBox();
+
+    }
+
+
 
 
 }
