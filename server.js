@@ -1,8 +1,12 @@
-import express from "express"
+import express, { response } from "express"
 import { config } from "dotenv"
 import { Configuration, OpenAIApi } from "openai"
+import { readFileSync, writeFile } from "fs"
+import { finished } from "stream";
 
 
+let data = readFileSync('msgs.json');
+let msgs = JSON.parse(data)
 
 config()
 
@@ -18,18 +22,55 @@ const app = express();
 app.use(express.static('public'));
 
 
-app.get('/prompt/:input?', promptGptResponse);
+app.get('/prompt/:role?/:content?', promptGptResponse);
 
 async function promptGptResponse(request, response) {
-    let input = JSON.stringify(request.params);
 
+    let msgs = JSON.parse(readFileSync('msgs.json'))
 
+    //update msgs with user prompt
+    msgs.msgs.push({ role: request.params.role, content: request.params.content });
+    let data = JSON.stringify(msgs);
+    writeFile('msgs.json', data, finished)
+
+    function finished(err) {
+        console.log("ADDED MSG")
+    }
+
+    //call API
     const res = await openAi.createChatCompletion({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: input }],
+        messages: msgs.msgs,
+        max_tokens: 4000,
     })
 
+    //update msgs with response prompt
+    msgs.msgs.push({ role: "system", content: res.data.choices[0].message.content });
+    let resdata = JSON.stringify(msgs);
+    writeFile('msgs.json', resdata, finished)
+
     response.send(res.data.choices[0].message.content);
+}
+
+app.get('/all', sendAllMessages);
+
+function sendAllMessages(request, response) {
+    response.send(msgs);
+}
+
+
+app.get('/add/:role?/:content?', addMessage);
+
+function addMessage(request, response) {
+
+    msgs.msgs.push({ role: request.params.role, content: request.params.content });
+    let data = JSON.stringify(msgs);
+    writeFile('msgs.json', data, finished)
+    response.send("added to msgs");
+
+    function finished(err) {
+        console.log("ADDED MSG")
+    }
 }
 
 

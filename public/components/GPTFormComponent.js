@@ -2,16 +2,15 @@ const template = document.createElement("template");
 template.innerHTML = `
 
 <style>
-@import "/public/style.css";
+@import "style.css";
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer"
 />
-<p id="response">Hi, I'm a friendly Chatbot. Ask me anything you want to know.</p>
+<p class="message response">Hi, I'm a friendly Chatbot. Ask me anything you want to know.</p>
 <div class="input-row">
-<input 
-placeholder="Type message..."
-id="inputField"></input>
-<button id="generateRes"><i class="fa-sharp fa-solid fa-paper-plane"></i></i></button>
+<input placeholder="Type message..."id="inputField"></input>
+
+<button id="generateRes"><i class="fa-sharp fa-solid fa-paper-plane"></i></button>
 </div>
 `;
 
@@ -22,7 +21,6 @@ class gptForm extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.shadowRoot.appendChild(template.content.cloneNode(true));
 
-
     }
 
 
@@ -30,7 +28,7 @@ class gptForm extends HTMLElement {
         let input = this.shadowRoot.querySelector('#inputField').value;
 
         if (input) {
-            let uri = '/prompt/' + input
+            let uri = '/prompt/user/' + input
             const response = await fetch(uri, {
                 method: 'GET',
                 mode: 'cors',
@@ -38,7 +36,7 @@ class gptForm extends HTMLElement {
             })
 
             this.shadowRoot
-                .querySelector('#response').innerHTML = await response.text();;
+                .querySelector('.response').innerHTML = await response.text();;
         }
     }
 
