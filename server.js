@@ -6,7 +6,8 @@ import { finished } from "stream";
 
 
 let data = readFileSync('msgs.json');
-let msgs = JSON.parse(data)
+let msgs = JSON.parse(data);
+
 
 config()
 
@@ -40,7 +41,7 @@ async function promptGptResponse(request, response) {
     //call API
     const res = await openAi.createChatCompletion({
         model: "gpt-3.5-turbo",
-        messages: msgs.msgs,
+        messages: msgs.msgs.slice(1).slice(-5),
         max_tokens: 4000,
     })
 
@@ -55,7 +56,7 @@ async function promptGptResponse(request, response) {
 app.get('/all', sendAllMessages);
 
 function sendAllMessages(request, response) {
-    response.send(msgs);
+    response.send(JSON.stringify(msgs));
 }
 
 
